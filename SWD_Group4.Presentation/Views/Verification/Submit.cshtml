@@ -1,0 +1,75 @@
+@model SWD_Group4.Presentation.Models.SubmitVerificationRequestViewModel
+@{
+    ViewData["Title"] = "Submit Verification";
+}
+
+<h2>Verify Seller Information</h2>
+
+@if (!string.IsNullOrWhiteSpace(ViewBag.Message as string))
+{
+    <div class="alert alert-info">@ViewBag.Message</div>
+}
+
+<form asp-action="submitVerificationRequest" method="post" enctype="multipart/form-data" class="mt-3">
+    @Html.AntiForgeryToken()
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="Url" class="form-label"></label>
+        <input asp-for="Url" class="form-control" />
+        <span asp-validation-for="Url" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="CitizenId" class="form-label"></label>
+        <input asp-for="CitizenId" class="form-control" />
+        <span asp-validation-for="CitizenId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="BankAccount" class="form-label"></label>
+        <input asp-for="BankAccount" class="form-control" />
+        <span asp-validation-for="BankAccount" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="BankName" class="form-label"></label>
+        <input asp-for="BankName" class="form-control" />
+        <span asp-validation-for="BankName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="CitizenImageFile" class="form-label">CCCD Front Image</label>
+        <input asp-for="CitizenImageFile" class="form-control" type="file" accept="image/*" />
+        <span asp-validation-for="CitizenImageFile" class="text-danger"></span>
+        <div class="form-text">Or paste an image URL below (optional).</div>
+        <input asp-for="CitizenImage" class="form-control mt-1" placeholder="https://... or /uploads/..." />
+        <span asp-validation-for="CitizenImage" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="CitizenImageBackFile" class="form-label">CCCD Back Image</label>
+        <input asp-for="CitizenImageBackFile" class="form-control" type="file" accept="image/*" />
+        <span asp-validation-for="CitizenImageBackFile" class="text-danger"></span>
+        <div class="form-text">Or paste an image URL below (optional).</div>
+        <input asp-for="CitizenImageBack" class="form-control mt-1" placeholder="https://... or /uploads/..." />
+        <span asp-validation-for="CitizenImageBack" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="BankCardImageFile" class="form-label">Bank Card Image</label>
+        <input asp-for="BankCardImageFile" class="form-control" type="file" accept="image/*" />
+        <span asp-validation-for="BankCardImageFile" class="text-danger"></span>
+        <div class="form-text">Or paste an image URL below (optional).</div>
+        <input asp-for="BankCardImage" class="form-control mt-1" placeholder="https://... or /uploads/..." />
+        <span asp-validation-for="BankCardImage" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+    <a asp-action="MyRequests" class="btn btn-link">My Requests</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

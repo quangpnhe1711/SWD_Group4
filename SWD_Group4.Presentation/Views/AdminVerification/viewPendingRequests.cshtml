@@ -1,0 +1,37 @@
+@model List<SWD_Group4.DataAccess.Models.VerificationRequest>
+@{
+    ViewData["Title"] = "Pending Verification Requests";
+}
+
+<h2>Pending Verification Requests</h2>
+
+@if (!string.IsNullOrWhiteSpace(ViewBag.Message as string))
+{
+    <div class="alert alert-info">@ViewBag.Message</div>
+}
+
+<table class="table table-bordered table-striped mt-3">
+    <thead>
+        <tr>
+            <th>Request ID</th>
+            <th>User ID</th>
+            <th>User Email</th>
+            <th>Submitted</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var r in Model)
+        {
+            <tr>
+                <td>@r.Id</td>
+                <td>@r.UserId</td>
+                <td>@(r.User?.Email ?? "")</td>
+                <td>@r.CreatedAt</td>
+                <td>
+                    <a asp-action="getDetail" asp-route-requestId="@r.Id" class="btn btn-sm btn-primary">Review</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

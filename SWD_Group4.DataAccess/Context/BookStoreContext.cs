@@ -29,17 +29,27 @@ public partial class BookStoreContext : DbContext
 
     public virtual DbSet<RefundRequest> RefundRequests { get; set; }
 
+    public virtual DbSet<VerificationRequest> VerificationRequests { get; set; }
+
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
+        if (optionsBuilder.IsConfigured)
+        {
+            return;
+        }
+
         var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json")
+            .AddJsonFile("appsettings.json", optional: true)
             .Build();
 
         var connectionString = configuration.GetConnectionString("DBDefault");
-        optionsBuilder.UseSqlServer(connectionString);
+        if (!string.IsNullOrWhiteSpace(connectionString))
+        {
+            optionsBuilder.UseSqlServer(connectionString);
+        }
     }
 
 
@@ -219,13 +229,74 @@ public partial class BookStoreContext : DbContext
                 .HasConstraintName("FK__RefundReq__order__6A30C649");
         });
 
+        modelBuilder.Entity<VerificationRequest>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.ToTable("VerificationRequest");
+
+            entity.HasIndex(e => e.UserId, "IX_VerificationRequest_user_id");
+            entity.HasIndex(e => e.Status, "IX_VerificationRequest_status");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.Status)
+                .HasMaxLength(20)
+                .HasColumnName("status");
+
+            entity.Property(e => e.Url)
+                .HasMaxLength(500)
+                .HasColumnName("url");
+            entity.Property(e => e.CitizenId)
+                .HasMaxLength(50)
+                .HasColumnName("citizen_id");
+            entity.Property(e => e.BankAccount)
+                .HasMaxLength(50)
+                .HasColumnName("bank_account");
+            entity.Property(e => e.BankName)
+                .HasMaxLength(255)
+                .HasColumnName("bank_name");
+            entity.Property(e => e.CitizenImage)
+                .HasMaxLength(1000)
+                .HasColumnName("citizen_image");
+            entity.Property(e => e.CitizenImageBack)
+                .HasMaxLength(1000)
+                .HasColumnName("citizen_image_back");
+            entity.Property(e => e.BankCardImage)
+                .HasMaxLength(1000)
+                .HasColumnName("bank_card_image");
+
+            entity.Property(e => e.CreatedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+            entity.Property(e => e.UpdatedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("updated_at");
+            entity.Property(e => e.Approved).HasColumnName("approved");
+            entity.Property(e => e.Reason)
+                .HasMaxLength(500)
+                .HasColumnName("reason");
+
+            entity.HasOne(d => d.User).WithMany(p => p.VerificationRequests)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK_VerificationRequest_User");
+        });
+
         modelBuilder.Entity<User>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__User__3213E83F16440526");
 
             entity.ToTable("User");
 
-            entity.HasIndex(e => e.Email, "UQ__User__AB6E6164C40CDC33").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ_User_email").IsUnique();
+            entity.HasIndex(e => e.Name, "UQ_User_name").IsUnique();
+            entity.HasIndex(e => e.CitizenId, "UX_User_citizen_id")
+                .IsUnique()
+                .HasFilter("[citizen_id] IS NOT NULL");
+
+            entity.HasIndex(e => e.BankAccount, "UX_User_bank_account")
+                .IsUnique()
+                .HasFilter("[bank_account] IS NOT NULL");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Email)
@@ -243,6 +314,29 @@ public partial class BookStoreContext : DbContext
             entity.Property(e => e.Status)
                 .HasMaxLength(20)
                 .HasColumnName("status");
+
+            entity.Property(e => e.Url)
+                .HasMaxLength(500)
+                .HasColumnName("url");
+            entity.Property(e => e.CitizenId)
+                .HasMaxLength(50)
+                .HasColumnName("citizen_id");
+            entity.Property(e => e.BankAccount)
+                .HasMaxLength(50)
+                .HasColumnName("bank_account");
+            entity.Property(e => e.BankName)
+                .HasMaxLength(255)
+                .HasColumnName("bank_name");
+            entity.Property(e => e.CitizenImage)
+                .HasMaxLength(1000)
+                .HasColumnName("citizen_image");
+            entity.Property(e => e.CitizenImageBack)
+                .HasMaxLength(1000)
+                .HasColumnName("citizen_image_back");
+
+            entity.Property(e => e.SuspensionEndAt)
+                .HasColumnType("datetime")
+                .HasColumnName("suspension_end_at");
         });
 
         OnModelCreatingPartial(modelBuilder);

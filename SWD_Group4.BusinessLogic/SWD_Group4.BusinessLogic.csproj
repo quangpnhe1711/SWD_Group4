@@ -16,4 +16,8 @@
     <ProjectReference Include="..\SWD_Group4.DataAccess\SWD_Group4.DataAccess.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+  </ItemGroup>
+
 </Project>

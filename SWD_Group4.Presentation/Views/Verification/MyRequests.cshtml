@@ -1,0 +1,37 @@
+@model List<SWD_Group4.DataAccess.Models.VerificationRequest>
+@{
+    ViewData["Title"] = "My Verification Requests";
+}
+
+<h2>My Verification Requests</h2>
+
+@if (!string.IsNullOrWhiteSpace(ViewBag.Message as string))
+{
+    <div class="alert alert-info">@ViewBag.Message</div>
+}
+
+<table class="table table-bordered table-striped mt-3">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Updated</th>
+            <th>Reason</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var r in Model)
+        {
+            <tr>
+                <td>@r.Id</td>
+                <td>@r.Status</td>
+                <td>@r.CreatedAt</td>
+                <td>@(r.UpdatedAt?.ToString() ?? "")</td>
+                <td>@(r.Reason ?? "")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Submit" class="btn btn-primary">Submit New Request</a>

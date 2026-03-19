@@ -1,0 +1,130 @@
+@model SWD_Group4.DataAccess.Models.VerificationRequest
+@using SWD_Group4.Presentation.Models
+@{
+    ViewData["Title"] = "Verification Request Details";
+    var rejectModel = ViewBag.RejectModel as RejectVerificationRequestViewModel;
+    var isProcess = string.Equals(Model.Status, "PROCESS", StringComparison.OrdinalIgnoreCase);
+
+    string Mask(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return "";
+        var s = raw.Trim();
+        if (s.Length <= 4) return new string('*', s.Length);
+        return new string('*', s.Length - 4) + s[^4..];
+    }
+}
+
+<h2>Verification Request Details</h2>
+
+<div class="mb-2">
+    <span class="badge @(isProcess ? "bg-warning text-dark" : (string.Equals(Model.Status, "APPROVED", StringComparison.OrdinalIgnoreCase) ? "bg-success" : "bg-danger"))">
+        @Model.Status
+    </span>
+    @if (!isProcess && string.Equals(Model.Status, "REJECTED", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(Model.Reason))
+    {
+        <span class="text-muted ms-2">Reason: @Model.Reason</span>
+    }
+</div>
+
+@if (!string.IsNullOrWhiteSpace(TempData["Message"] as string))
+{
+    <div class="alert alert-info">@TempData["Message"]</div>
+}
+
+<div class="row mt-3">
+    <div class="col-md-6">
+        <h4>Current Data</h4>
+        <ul class="list-group">
+            <li class="list-group-item">
+                <strong>Citizen ID:</strong>
+                <span class="sensitive-value" data-masked="@Mask(Model.User?.CitizenId)" data-full="@(Model.User?.CitizenId ?? "")">@Mask(Model.User?.CitizenId)</span>
+            </li>
+            <li class="list-group-item">
+                <strong>Bank Account:</strong>
+                <span class="sensitive-value" data-masked="@Mask(Model.User?.BankAccount)" data-full="@(Model.User?.BankAccount ?? "")">@Mask(Model.User?.BankAccount)</span>
+            </li>
+            <li class="list-group-item"><strong>Bank Name:</strong> @(Model.User?.BankName ?? "")</li>
+            <li class="list-group-item"><strong>URL:</strong> @(Model.User?.Url ?? "")</li>
+        </ul>
+    </div>
+    <div class="col-md-6">
+        <h4>Requested Data</h4>
+        <ul class="list-group">
+            <li class="list-group-item">
+                <strong>Citizen ID:</strong>
+                <span class="sensitive-value" data-masked="@Mask(Model.CitizenId)" data-full="@(Model.CitizenId ?? "")">@Mask(Model.CitizenId)</span>
+            </li>
+            <li class="list-group-item">
+                <strong>Bank Account:</strong>
+                <span class="sensitive-value" data-masked="@Mask(Model.BankAccount)" data-full="@(Model.BankAccount ?? "")">@Mask(Model.BankAccount)</span>
+            </li>
+            <li class="list-group-item"><strong>Bank Name:</strong> @(Model.BankName ?? "")</li>
+            <li class="list-group-item"><strong>URL:</strong> @(Model.Url ?? "")</li>
+        </ul>
+    </div>
+</div>
+
+<div class="mt-4">
+    <h4>Supporting Documents</h4>
+    <ul>
+        <li><a href="@(Model.CitizenImage ?? "#")" target="_blank">CCCD Front</a></li>
+        <li><a href="@(Model.CitizenImageBack ?? "#")" target="_blank">CCCD Back</a></li>
+        <li><a href="@(Model.BankCardImage ?? "#")" target="_blank">Bank Card</a></li>
+    </ul>
+</div>
+
+<div class="mt-4">
+    @if (isProcess)
+    {
+        <div class="d-flex gap-2">
+            <form asp-action="approveRequest" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="requestId" value="@Model.Id" />
+                <button type="submit" class="btn btn-success">Approve</button>
+            </form>
+
+            <form asp-action="rejectRequest" method="post" class="d-flex align-items-end gap-2">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="RequestId" value="@Model.Id" />
+                <div>
+                    <label class="form-label">Rejection reason (min 20 chars)</label>
+                    <input type="text" name="Reason" class="form-control" required minlength="20" value="@(rejectModel?.Reason ?? "")" />
+                </div>
+                <button type="submit" class="btn btn-danger">Reject</button>
+            </form>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-secondary mb-0">
+            This request has already been processed. Approve/Reject actions are disabled.
+        </div>
+    }
+</div>
+
+<a asp-action="viewPendingRequests" class="btn btn-link mt-3">Back to list</a>
+
+@section Scripts {
+    <style>
+        .sensitive-value { cursor: pointer; user-select: none; }
+    </style>
+    <script>
+        (function () {
+            function toggle(el) {
+                if (!el) return;
+                var showing = el.getAttribute('data-showing') === 'true';
+                if (showing) {
+                    el.textContent = el.getAttribute('data-masked') || '';
+                    el.setAttribute('data-showing', 'false');
+                } else {
+                    el.textContent = el.getAttribute('data-full') || '';
+                    el.setAttribute('data-showing', 'true');
+                }
+            }
+
+            document.querySelectorAll('.sensitive-value').forEach(function (el) {
+                el.addEventListener('click', function () { toggle(el); });
+            });
+        })();
+    </script>
+}
