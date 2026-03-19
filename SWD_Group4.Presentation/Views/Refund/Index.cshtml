@@ -1,0 +1,84 @@
+@model SWD_Group4.Presentation.Models.RefundListPageViewModel
+
+@{
+    ViewData["Title"] = "Refund Requests";
+}
+
+<h2>Refund Requests</h2>
+
+@if (!string.IsNullOrWhiteSpace(Model.Message))
+{
+    <div class="alert alert-info">@Model.Message</div>
+}
+
+<div class="mb-3">
+    <form asp-action="ViewRefundRequests" method="get" class="d-flex gap-2">
+        <label for="sellerId" class="form-label">Seller ID</label>
+        <input id="sellerId" name="sellerId" class="form-control" value="@Model.SellerId" style="max-width: 140px;" />
+        <button class="btn btn-primary" type="submit">Load</button>
+    </form>
+</div>
+
+@if (Model.Refunds.Count == 0)
+{
+    <p>No refund request available</p>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Refund ID</th>
+                <th>Status</th>
+                <th>Reason</th>
+                <th>Order ID</th>
+                <th>Customer ID</th>
+                <th>Total Price</th>
+                <th>Books</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var refund in Model.Refunds)
+        {
+            <tr>
+                <td>@refund.RefundId</td>
+                <td>@refund.RefundRequestStatus</td>
+                <td>@refund.Reason</td>
+                <td>@refund.Order?.OrderId</td>
+                <td>@refund.CustomerId</td>
+                <td>@refund.Order?.TotalPrice</td>
+                <td>
+                    @if (refund.Order?.OrderItems?.Count > 0)
+                    {
+                        <ul class="mb-0">
+                        @foreach (var item in refund.Order.OrderItems)
+                        {
+                            <li>@item.Book?.Title (x@item.Quantity)</li>
+                        }
+                        </ul>
+                    }
+                </td>
+                <td>
+                    <form asp-action="ApproveRefund" method="post" class="mb-2">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="sellerId" value="@Model.SellerId" />
+                        <input type="hidden" name="refundId" value="@refund.RefundId" />
+                        <button class="btn btn-success btn-sm" name="decision" value="confirm">Approve</button>
+                        <button class="btn btn-outline-secondary btn-sm" name="decision" value="cancel">Cancel</button>
+                    </form>
+
+                    <form asp-action="RejectRefund" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="sellerId" value="@Model.SellerId" />
+                        <input type="hidden" name="refundId" value="@refund.RefundId" />
+                        <input type="text" name="reason" class="form-control form-control-sm mb-1" placeholder="Reject reason" />
+                        <button class="btn btn-danger btn-sm" name="decision" value="confirm">Reject</button>
+                        <button class="btn btn-outline-secondary btn-sm" name="decision" value="cancel">Cancel</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
